@@ -4,10 +4,11 @@ use schema::passwords::password;
 pub mod models;
 pub mod schema;
 use self::models::*;
-
+// use serde::{Serialize};
+// use serde_json;
+use crate::schema::passwords::dsl::{passwords, website};
 fn main() {
-    use schema::passwords::dsl::{passwords, website};
-
+    
     let connection = &mut connect_to_db();
 
     // the order of what follows is just for testing and can be changed
@@ -21,8 +22,10 @@ fn main() {
 
     //displaying the results
     let result = display_database(connection);
-    println!("\n {:?}", result);
+    //let json = serde_json::to_string(&result);
 
+    println!("\n {:?}", result);
+    
     //deleting the database
     delete_from_database("example.com", connection);
 
@@ -37,7 +40,7 @@ fn connect_to_db() -> SqliteConnection {
 
 //reading the database
 fn display_database(connection: &mut SqliteConnection) -> Vec<Password> {
-    use schema::passwords::dsl::passwords;
+    
     let result: Vec<Password> = passwords
         .load(connection)
         .expect("error connecting to database");
@@ -46,15 +49,15 @@ fn display_database(connection: &mut SqliteConnection) -> Vec<Password> {
 //creating a new entry
 fn create_password(
     conn: &mut SqliteConnection,
-    website: &str,
-    username: &str,
-    password_value: &str,
+    website_input: &str,
+    username_input: &str,
+    password_input: &str,
 ) -> Password {
     use crate::schema::passwords;
     let new_password_data = NewPassword {
-        website,
-        username,
-        password: password_value,
+        website: website_input,
+        username: username_input,
+        password: password_input,
     };
 
     diesel::insert_into(passwords::table)
@@ -65,8 +68,8 @@ fn create_password(
 }
 
 //deleting the database
-fn delete_from_database(target: &str, connection: SqliteConnection) {
-    let num_deleted = diesel::delete(passwords.filter(website.like(pattern)))
+fn delete_from_database(target: &str, connection: &mut SqliteConnection) {
+        let num_deleted = diesel::delete(passwords.filter(password.like(target)))
         .execute(connection)
         .expect("Error deleting entries.");
 }
