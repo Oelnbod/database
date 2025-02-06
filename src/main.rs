@@ -1,12 +1,12 @@
-use diesel::{connection, prelude::*};
+use diesel::prelude::*;
 use schema::passwords::password;
 //importing schema.rs and models.rs
 pub mod models;
 pub mod schema;
 use self::models::*;
-// use serde::{Serialize};
-// use serde_json;
-use crate::schema::passwords::dsl::{passwords, website};
+//use serde_json;
+//use crate::schema::passwords::dsl::{passwords, website};
+
 fn main() {
     
     let connection = &mut connect_to_db();
@@ -22,7 +22,7 @@ fn main() {
 
     //displaying the results
     let result = display_database(connection);
-    //let json = serde_json::to_string(&result);
+  //  let json = serde_json::to_string(&result);
 
     println!("\n {:?}", result);
     
@@ -69,7 +69,7 @@ fn create_password(
 
 //deleting the database
 fn delete_from_database(target: &str, connection: &mut SqliteConnection) {
-        let num_deleted = diesel::delete(passwords.filter(password.like(target)))
+        let num_deleted = diesel::delete(passwords.filter(website.like(format!("%{}%", target))))
         .execute(connection)
         .expect("Error deleting entries.");
 }

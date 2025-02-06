@@ -1,7 +1,7 @@
 use diesel::prelude::*;
-//use serde::{Serialize};
+use serde::{Serialize};
 
-//#[derive(Serialize)]
+#[derive(Serialize)]
 #[derive(Queryable, Selectable, Debug)]
 #[diesel(table_name = crate::schema::passwords)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
