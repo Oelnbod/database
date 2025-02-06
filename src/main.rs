@@ -4,8 +4,8 @@ use schema::passwords::password;
 pub mod models;
 pub mod schema;
 use self::models::*;
-//use serde_json;
-//use crate::schema::passwords::dsl::{passwords, website};
+use serde_json;
+use crate::schema::passwords::dsl::{passwords, website};
 
 fn main() {
     
@@ -19,12 +19,13 @@ fn main() {
 
     //writing the password, it returns the row added (I think)
     let password_out = create_password(connection, "example.com", "example", "hi");
+    let password_out = create_password(connection, "example.com", "example", "hi");
 
     //displaying the results
     let result = display_database(connection);
-  //  let json = serde_json::to_string(&result);
+    let json = serde_json::to_string(&result);
 
-    println!("\n {:?}", result);
+    println!("\n {:?}", json);
     
     //deleting the database
     delete_from_database("example.com", connection);
