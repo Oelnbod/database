@@ -1,0 +1,3 @@
+# A password manager
+### PLEASE DO NOT SEND ME MERGE REQUESTS, THIS IS A PERSONAL PROJECT, JUST FOR LEARNING!
+Built in rust with sqlite
