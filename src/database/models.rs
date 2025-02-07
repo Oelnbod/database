@@ -1,9 +1,8 @@
 use diesel::prelude::*;
-use serde::{Serialize};
+use serde::Serialize;
 
-#[derive(Serialize)]
-#[derive(Queryable, Selectable, Debug)]
-#[diesel(table_name = crate::schema::passwords)]
+#[derive(Serialize, Queryable, Selectable, Debug)]
+#[diesel(table_name = crate::database::schema::passwords)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct Password {
     pub id: i32,
@@ -12,7 +11,7 @@ pub struct Password {
     pub password: String,
 }
 
-use crate::schema::passwords;
+use crate::database::schema::passwords;
 
 #[derive(Insertable)]
 #[diesel(table_name = passwords)]
