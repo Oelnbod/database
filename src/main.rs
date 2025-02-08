@@ -1,10 +1,11 @@
 //use self::models::*;
 pub mod database;
 
+use diesel::query_builder;
 //using serde for parsing json
 use serde_json;
-use std::net::{TcpListener, TcpStream};
 use std::io::*;
+use std::net::{TcpListener, TcpStream};
 use std::thread;
 use threadpool::ThreadPool;
 
@@ -12,24 +13,22 @@ fn main() {
     let thread_pool = ThreadPool::new(10);
 
     thread::spawn(move || {
-    let http_listener = TcpListener::bind("0.0.0.0:7878").unwrap();
-    for stream in http_listener.incoming() {
-        match stream {
-            Ok(stream) => {
-		thread_pool.execute(move || {
-		    handle_connection(stream)
-		});
-	    },		    
-            Err(_) => {
-		println!("Failed to connect to request.");
-	    }
-	} 
-    }
+        let http_listener = TcpListener::bind("0.0.0.0:7878").unwrap();
+        for stream in http_listener.incoming() {
+            match stream {
+                Ok(stream) => {
+                    thread_pool.execute(move || handle_connection(stream));
+                }
+                Err(_) => {
+                    println!("Failed to connect to request.");
+                }
+            }
+        }
     });
 
     //prevents the main thread from ending (for multithreading)
     loop {
-	thread::park();
+        thread::park();
     }
     /* database stuff (commented out whilst api/web server stuff implemented)
     let connection = &mut database::connect(); //connecting to the database
@@ -62,16 +61,10 @@ fn handle_connection(mut stream: TcpStream) {
     //reading the request
     let buf_reader = BufReader::new(&mut stream);
     let request_line = buf_reader.lines().next().unwrap().unwrap();
+    let query = simplify_request(&request_line); //this is the data but after the slash that was entered
 
-    // this next bit returns the bit after the /  in the http request
 
-  //  let file = file_target(&request_line); //this is the file but after the slash that was entered
-
-    //let target = return_file(file.to_string());
-
-    //let mut full_file: String = "./www/".to_string();
-    //full_file.push_str(&target); //full_file is the file including the ./www/ bit
-    //println!("{full_file}");
+    println!("{}", query);
 
     if request_line == "GET / HTTP/1.1" {
         //this is different so that the index.html is the landing page
@@ -92,4 +85,20 @@ fn handle_connection(mut stream: TcpStream) {
 
         //note: there is no 404.html exception as this is handled by return_file()
     }
+}
+fn simplify_request(request: &String) -> String {
+    //note, this is done weirdly as we don't know the length of the file requested
+    let length = request.len();
+    let removed_http_method = &request.to_string()[5..length]; //removing start
+
+    let reversed = &removed_http_method.chars().rev().collect::<String>(); //reversing
+
+    let length = reversed.len(); //overwriting length as new
+
+    let removing_status_code = &reversed[9..length]; //removing start of reversed (so end of normal)
+
+    let query = &removing_status_code.chars().rev().collect::<String>(); //this reverses again for normal
+
+    let casted_query: String = query.to_owned(); //casting to String and owning
+    casted_query
 }
