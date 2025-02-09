@@ -63,11 +63,8 @@ fn handle_connection(mut stream: TcpStream) {
     let request_line = buf_reader.lines().next().unwrap().unwrap();
     let query = simplify_request(&request_line); //this is the data but after the slash that was entered
 
-
-    println!("{}", query);
-
-    if request_line == "GET / HTTP/1.1" {
-        //this is different so that the index.html is the landing page
+    if query == "" {
+        //this may just display an index.html guide to the api
         let status_line = "HTTP/1.1 200 OK";
         let contents = "hi";
         let length = contents.len();
@@ -75,10 +72,16 @@ fn handle_connection(mut stream: TcpStream) {
         let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
 
         stream.write_all(response.as_bytes()).unwrap();
+	
     } else {
         let status_line = "HTTP/1.1 200 OK";
-        let contents = "hi";
-        let length = contents.len();
+
+	//this is identifying what needs to be done. 
+        let segmented_query = split_query(contents.clone());
+        println!("{:?}", segmented_query);
+	
+	let contents = query();
+	let length = contents.len();
 
         let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
         stream.write_all(response.as_bytes()).unwrap();
@@ -86,6 +89,7 @@ fn handle_connection(mut stream: TcpStream) {
         //note: there is no 404.html exception as this is handled by return_file()
     }
 }
+
 fn simplify_request(request: &String) -> String {
     //note, this is done weirdly as we don't know the length of the file requested
     let length = request.len();
@@ -101,4 +105,25 @@ fn simplify_request(request: &String) -> String {
 
     let casted_query: String = query.to_owned(); //casting to String and owning
     casted_query
+}
+
+fn split_query(mut query: String) -> Vec<String> {
+    //the query structure will be as following: domain/key/action/actionparams
+    //domain will be ignored as that is removed by simplify_request
+
+    let slash_position = query.chars().position(|c| c == '/').unwrap(); // this finds the first slash
+
+    let key = String::from(&query[0..slash_position]);
+
+    query.replace_range(0..slash_position + 1, ""); //the +1 is to remove the /
+
+    let slash_position = query.chars().position(|c| c == '/').unwrap();
+    let action = String::from(&query[0..slash_position]);
+
+    query.replace_range(0..slash_position + 1, "");
+
+    let parameters = query;
+
+    let result_vec: Vec<String> = vec![key, action, parameters];
+    result_vec
 }
