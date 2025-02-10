@@ -1,7 +1,7 @@
 //use self::models::*;
 pub mod database;
 
-use diesel::query_builder;
+use diesel::{connection, query_builder};
 //using serde for parsing json
 use serde_json;
 use std::io::*;
@@ -30,31 +30,6 @@ fn main() {
     loop {
         thread::park();
     }
-    /* database stuff (commented out whilst api/web server stuff implemented)
-    let connection = &mut database::connect(); //connecting to the database
-
-    // --- the order of what follows is just for testing and can be changed --
-
-    //displaying the results
-    let results = database::display(connection);
-    println!("{:?}", results);
-
-    //writing the password, it returns the row added (I think)
-    let password_out = database::create(connection, "example.com", "example", "hi");
-    let password_out = database::create(connection, "example.com", "example", "hi");
-
-    //displaying the results
-    let result = database::display(connection);
-    let json = serde_json::to_string(&result);
-
-    println!("\n {:?}", json);
-
-    //deleting the database
-    database::delete("example.com", connection);
-
-    //displaying the database again.
-    println!("\n \n {:?}", database::display(connection));
-     */
 }
 
 fn handle_connection(mut stream: TcpStream) {
@@ -131,16 +106,23 @@ fn take_action(segmented_query: Vec<String>) {
     let key = &segmented_query[0];
     let action = &segmented_query[1];
     let params = &segmented_query[2];
+    let db_connection = &mut database::connect(); //connecting to the database
     if key == "seckey" {
         println!("authenticated");
         if action == "display_all" {
             println!("displaying all");
-        } else if action == "add" {
-            println!("adding password");
-        } else if action == "delete" {
-            println!("delete");
+            let result = database::display(db_connection);
+            println!("{}", result);
         } else if action == "list_field" {
             println!("listing field");
+            let result = database::display_some(db_connection, "example.com".to_string());
+            println!("{}", result);
+        } else if action == "add" {
+            println!("adding password");
+            let new_password = database::create(db_connection, "example.com", "username", "pwd");
+        } else if action == "delete" {
+            println!("delete");
+            database::delete("example.com", db_connection);
         } else {
             println!("invalid action");
         }

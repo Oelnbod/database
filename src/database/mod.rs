@@ -9,6 +9,7 @@ pub mod schema;
 use crate::database::models::*;
 use crate::database::schema::passwords::dsl::{passwords, website};
 use crate::database::schema::passwords::password;
+use serde_json;
 
 //this identifies the project directory for identifying the location of main.db
 const PROJECT_DIR: &str = env!("CARGO_MANIFEST_DIR");
@@ -21,12 +22,24 @@ pub fn connect() -> SqliteConnection {
 }
 
 //reading the database
-pub fn display(connection: &mut SqliteConnection) -> Vec<Password> {
+pub fn display(connection: &mut SqliteConnection) -> String {
     let result: Vec<Password> = passwords
         .load(connection)
-        .expect("error connecting to database");
-    result
+        .expect("error displaying database");
+    let json_result =
+        serde_json::to_string(&result).expect("error converting Vec<Password> to json");
+    json_result
 }
+pub fn display_some(connection: &mut SqliteConnection, target: String) -> String {
+    let result: Vec<Password> = passwords
+        .filter(website.eq(target))
+        .load(connection)
+        .expect("error displaying database");
+    let json_result =
+        serde_json::to_string(&result).expect("error converting Vec<Password to json");
+    json_result
+}
+
 //creating a new entry
 pub fn create(
     conn: &mut SqliteConnection,
