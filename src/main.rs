@@ -72,16 +72,15 @@ fn handle_connection(mut stream: TcpStream) {
         let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
 
         stream.write_all(response.as_bytes()).unwrap();
-	
     } else {
         let status_line = "HTTP/1.1 200 OK";
 
-	//this is identifying what needs to be done. 
+        //this is identifying what needs to be done.
+        let contents = query;
         let segmented_query = split_query(contents.clone());
-        println!("{:?}", segmented_query);
-	
-	let contents = query();
-	let length = contents.len();
+        take_action(segmented_query);
+
+        let length = contents.len();
 
         let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
         stream.write_all(response.as_bytes()).unwrap();
@@ -126,4 +125,26 @@ fn split_query(mut query: String) -> Vec<String> {
 
     let result_vec: Vec<String> = vec![key, action, parameters];
     result_vec
+}
+
+fn take_action(segmented_query: Vec<String>) {
+    let key = &segmented_query[0];
+    let action = &segmented_query[1];
+    let params = &segmented_query[2];
+    if key == "seckey" {
+        println!("authenticated");
+        if action == "display_all" {
+            println!("displaying all");
+        } else if action == "add" {
+            println!("adding password");
+        } else if action == "delete" {
+            println!("delete");
+        } else if action == "list_field" {
+            println!("listing field");
+        } else {
+            println!("invalid action");
+        }
+    } else {
+        println!("invalid_authentication");
+    }
 }
