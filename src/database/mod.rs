@@ -8,7 +8,7 @@ pub mod schema;
 //using features from the models.rs and schema.rs scripts
 use crate::database::models::*;
 use crate::database::schema::passwords::dsl::{passwords, website};
-use crate::database::schema::passwords::password;
+//use crate::database::schema::passwords::password;
 use serde_json;
 
 //this identifies the project directory for identifying the location of main.db
@@ -63,7 +63,7 @@ pub fn create(
 
 //deleting the database
 pub fn delete(target: &str, connection: &mut SqliteConnection) {
-    let num_deleted = diesel::delete(passwords.filter(website.like(format!("%{}%", target))))
+    diesel::delete(passwords.filter(website.like(format!("%{}%", target))))
         .execute(connection)
         .expect("Error deleting entries.");
 }

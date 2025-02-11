@@ -1,9 +1,7 @@
 //use self::models::*;
 pub mod database;
 
-use diesel::{connection, query_builder};
 //using serde for parsing json
-use serde_json;
 use std::io::*;
 use std::net::{TcpListener, TcpStream};
 use std::thread;
@@ -51,10 +49,10 @@ fn handle_connection(mut stream: TcpStream) {
         let status_line = "HTTP/1.1 200 OK";
 
         //this is identifying what needs to be done.
-        let contents = query;
-        let segmented_query = split_list(contents.clone(), '/');
-        take_action(segmented_query);
-
+        
+        let segmented_query = split_list(query.clone(), '/');
+        let contents = take_action(segmented_query);
+	
         let length = contents.len();
 
         let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
@@ -102,35 +100,34 @@ fn split_list(mut query: String, symbol: char) -> Vec<String> {
     result_vec
 }
 
-fn take_action(segmented_query: Vec<String>) {
+fn take_action(segmented_query: Vec<String>) -> String {
     let key = &segmented_query[0];
     let action = &segmented_query[1];
     let params = &segmented_query[2];
     let db_connection = &mut database::connect(); //connecting to the database
     if key == "seckey" {
+        //authentication necessary as it is a password manager, probably use hashed keys with a hashed client end authentication
         println!("authenticated");
         if action == "list_all" {
             println!("displaying all");
             let result = database::display(db_connection);
-            println!("{}", result);
+           result
         } else if action == "list_row" {
             println!("listing field");
             let result = database::display_some(db_connection, params.to_string());
-            println!("{}", result);
+            result
         } else if action == "add" {
             println!("adding password");
             let fields = split_list(params.to_string(), ',');
-            println!("fields: {:?}", fields);
-            let new_password = database::create(db_connection, &fields[0], &fields[1], &fields[2]);
+            database::create(db_connection, &fields[0], &fields[1], &fields[2]);
+            "Created new entry".to_string()
         } else if action == "delete" {
-            println!("delete");
-	    
-	    database::delete(params, db_connection);
-	    
-	} else {
-            println!("invalid action");
+            database::delete(params, db_connection);
+            "Deleted password".to_string()
+        } else {
+            "invalid action".to_string()
         }
     } else {
-        println!("invalid_authentication");
+        "invalid_authentication".to_string()
     }
 }
