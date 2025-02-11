@@ -52,7 +52,7 @@ fn handle_connection(mut stream: TcpStream) {
 
         //this is identifying what needs to be done.
         let contents = query;
-        let segmented_query = split_query(contents.clone());
+        let segmented_query = split_list(contents.clone(), '/');
         take_action(segmented_query);
 
         let length = contents.len();
@@ -81,17 +81,17 @@ fn simplify_request(request: &String) -> String {
     casted_query
 }
 
-fn split_query(mut query: String) -> Vec<String> {
+fn split_list(mut query: String, symbol: char) -> Vec<String> {
     //the query structure will be as following: domain/key/action/actionparams
     //domain will be ignored as that is removed by simplify_request
 
-    let slash_position = query.chars().position(|c| c == '/').unwrap(); // this finds the first slash
+    let slash_position = query.chars().position(|c| c == symbol).unwrap(); // this finds the first slash
 
     let key = String::from(&query[0..slash_position]);
 
     query.replace_range(0..slash_position + 1, ""); //the +1 is to remove the /
 
-    let slash_position = query.chars().position(|c| c == '/').unwrap();
+    let slash_position = query.chars().position(|c| c == symbol).unwrap();
     let action = String::from(&query[0..slash_position]);
 
     query.replace_range(0..slash_position + 1, "");
@@ -109,23 +109,30 @@ fn take_action(segmented_query: Vec<String>) {
     let db_connection = &mut database::connect(); //connecting to the database
     if key == "seckey" {
         println!("authenticated");
-        if action == "display_all" {
+        if action == "list_all" {
             println!("displaying all");
             let result = database::display(db_connection);
             println!("{}", result);
-        } else if action == "list_field" {
+
+        } else if action == "list_row" {
             println!("listing field");
-            let result = database::display_some(db_connection, "example.com".to_string());
+            let result = database::display_some(db_connection, params.to_string());
             println!("{}", result);
-        } else if action == "add" {
+
+	} else if action == "add" {
             println!("adding password");
-            let new_password = database::create(db_connection, "example.com", "username", "pwd");
-        } else if action == "delete" {
+	    let fields = split_list(params.to_string(), ',');
+	    println!("fields: {:?}", fields);
+	    let new_password = database::create(db_connection, &fields[0], &fields[1], &fields[2]);
+
+	} else if action == "delete" {
             println!("delete");
             database::delete("example.com", db_connection);
-        } else {
+
+	} else {
             println!("invalid action");
-        }
+
+	}
     } else {
         println!("invalid_authentication");
     }

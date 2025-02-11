@@ -1,0 +1,2 @@
+curl http://192.168.1.120:7878/seckey/list_all/
+curl http://192.168.1.120:7878/seckey/list_all/
