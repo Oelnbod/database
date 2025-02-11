@@ -4,7 +4,7 @@ use std::net::TcpStream;
 use crate::database;
 use std::io::*;
 
-pub fn handle_connection(mut stream: TcpStream) {
+pub async fn handle_connection(mut stream: TcpStream) {
     //reading the request
     let buf_reader = BufReader::new(&mut stream);
     let request_line = buf_reader.lines().next().unwrap().unwrap();
