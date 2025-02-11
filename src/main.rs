@@ -113,26 +113,23 @@ fn take_action(segmented_query: Vec<String>) {
             println!("displaying all");
             let result = database::display(db_connection);
             println!("{}", result);
-
         } else if action == "list_row" {
             println!("listing field");
             let result = database::display_some(db_connection, params.to_string());
             println!("{}", result);
-
-	} else if action == "add" {
+        } else if action == "add" {
             println!("adding password");
-	    let fields = split_list(params.to_string(), ',');
-	    println!("fields: {:?}", fields);
-	    let new_password = database::create(db_connection, &fields[0], &fields[1], &fields[2]);
-
-	} else if action == "delete" {
+            let fields = split_list(params.to_string(), ',');
+            println!("fields: {:?}", fields);
+            let new_password = database::create(db_connection, &fields[0], &fields[1], &fields[2]);
+        } else if action == "delete" {
             println!("delete");
-            database::delete("example.com", db_connection);
-
+	    
+	    database::delete(params, db_connection);
+	    
 	} else {
             println!("invalid action");
-
-	}
+        }
     } else {
         println!("invalid_authentication");
     }
