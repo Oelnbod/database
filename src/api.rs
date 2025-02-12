@@ -1,8 +1,9 @@
 //pub mod database;
 //use crate::database;
-use std::net::TcpStream;
 use crate::database;
+use bcrypt::{hash, verify, DEFAULT_COST};
 use std::io::*;
+use std::net::TcpStream;
 
 pub async fn handle_connection(mut stream: TcpStream) {
     //reading the request
@@ -74,13 +75,18 @@ fn split_list(mut query: String, symbol: char) -> Vec<String> {
     result_vec
 }
 
+//the password is seckey (just for testing)
 fn take_action(segmented_query: Vec<String>) -> String {
     let key = &segmented_query[0];
     let action = &segmented_query[1];
     let params = &segmented_query[2];
+
     let db_connection = &mut database::connect(); //connecting to the database
 
-    if key == "seckey" {
+    let hash = "$2b$12$99j47M.VczzH9iX0pg6E6O5nJ2tsB.KtGP0jgI/MOsegAqJQNk5Am";
+    let authorised  = verify(key, &hash).unwrap();
+
+    if authorised  == true {
         //authentication necessary as it is a password manager, probably use hashed keys with a hashed client end authentication
 
         if action == "list_all" {
