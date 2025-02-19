@@ -1,7 +1,7 @@
 //pub mod database;
 //use crate::database;
 use crate::database;
-use bcrypt::{hash, verify, DEFAULT_COST};
+use bcrypt::verify;
 use std::io::*;
 use std::net::TcpStream;
 
