@@ -1,5 +1,3 @@
-//pub mod database;
-//use crate::database;
 use crate::database;
 use bcrypt::verify;
 use std::io::*;

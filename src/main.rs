@@ -1,4 +1,4 @@
-//use self::models::*;
+
 pub mod api;
 pub mod database;
 //using serde for parsing json
@@ -19,5 +19,5 @@ async fn main() {
         }
     }
 
-    //prevents the main thread from ending (for multithreading)
+   
 }
